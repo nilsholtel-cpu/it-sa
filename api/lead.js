@@ -58,12 +58,20 @@ async function sendToNotion(payload) {
   const NOTION_DB_ID  = process.env.NOTION_DB_ID;
   if (!NOTION_SECRET || !NOTION_DB_ID) throw new Error('Notion env vars missing');
 
-  const { name } = payload || {};
+  const { name, company, email, profile, answers = {} } = payload || {};
+
   const body = {
     parent: { database_id: NOTION_DB_ID },
     properties: {
-      // <- PASSE "Name" GENAU an die Titel-Spalte deiner DB an
-      Name: { title: [{ text: { content: String(name || '').trim() || 'Unbekannt' } }] },
+      // WICHTIG: "Name" muss exakt der Titel-Property deiner DB entsprechen.
+      Name:    { title: [{ text: { content: String(name || '').trim() || 'Unbekannt' } }] },
+      Company: { rich_text: [{ text: { content: company || '' } }] },
+      Email:   { email: email || '' },
+      Profile: { rich_text: [{ text: { content: profile || '' } }] },
+      Q1:      { rich_text: [{ text: { content: answers['q1_invest']  || '' } }] },
+      Q2:      { rich_text: [{ text: { content: answers['q2_gtm']     || '' } }] },
+      Q3:      { rich_text: [{ text: { content: answers['q3_ratings'] || '' } }] },
+      Q4:      { rich_text: [{ text: { content: answers['q4_growth']  || '' } }] },
     },
   };
 

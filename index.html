@@ -89,53 +89,10 @@
     headline: 'Willkommen bei techconsult – Research & Insights for IT-Decision Makers.',
     calendarUrl: 'https://outlook.office.com/book/techconsultGmbHNilsHoltel@techconsult.de/',
     reportEmail: 'nils.holtel@techconsult.de',
-    apiUrl: '/api/lead', // <— Vercel Serverless Endpoint
-
-    quiz: [
-      {
-        id: 'q1_invest',
-        text: '> Wie wichtig werden Investitionen in Marktforschung & Wettbewerbsanalysen für Ihr Unternehmen bis 2026?',
-        options: [
-          { label: 'Sehr wichtig – wir bauen das aus', key: 'invest_high', benchmark: '62% der Anbieter investieren bis 2026 gezielt in Market Intelligence – die Orientierung wird entscheidend.' },
-          { label: 'Mittel – punktuell geplant', key: 'invest_mid', benchmark: 'Viele Unternehmen planen punktuelle Analysen: Fokus auf kritische Entscheidungen und Wettbewerbssituationen.' },
-          { label: 'Gering – bisher kein Fokus', key: 'invest_low', benchmark: 'Ein geringer Fokus birgt Risiko: fehlende Markttransparenz verlängert Zyklen und erschwert Priorisierung.' }
-        ]
-      },
-      {
-        id: 'q2_gtm',
-        text: '> Wo erwarten Sie die größten Veränderungen in Ihrem Go-to-Market bis 2026?',
-        options: [
-          { label: 'Neue Zielmärkte / Branchen', key: 'gtm_newmarkets', benchmark: 'Viele Anbieter nutzen neue Verticals, um Wachstum zu beschleunigen – vorausgesetzt, Messaging & Use-Cases passen.' },
-          { label: 'Vertriebsmodell neu ausrichten', key: 'gtm_salesmodel', benchmark: 'Die Neuausrichtung des Vertriebs (Direkt/Partner) wirkt stark – klare ICP-Definitionen sind der Hebel.' },
-          { label: 'Marketing & Kommunikation verstärken', key: 'gtm_marketing', benchmark: '43% der Anbieter priorisieren bis 2026 eine Schärfung ihrer Marketing- & Kommunikationsstrategie.' },
-          { label: 'Customer Experience ausbauen', key: 'gtm_cx', benchmark: 'Investitionen in CX wirken doppelt: Höhere Bindung und bessere Weiterempfehlungen entlang der Journey.' }
-        ]
-      },
-      {
-        id: 'q3_ratings',
-        text: '> Welche Rolle spielen unabhängige User Ratings & Analysten-Benchmarks (PUR) für Sie bis 2026?',
-        options: [
-          { label: 'Sehr relevant – beeinflusst Marktauftritt', key: 'ratings_high', benchmark: 'Fast zwei Drittel der Anbieter setzen bis 2026 auf unabhängige Ratings, um Vertrauen am Markt aufzubauen.' },
-          { label: 'Mittel – nice to have, ergänzend', key: 'ratings_mid', benchmark: 'Ergänzend eingesetzt, bieten Ratings schnelle Orientierung und stärken den Beleg im Mid-Funnel.' },
-          { label: 'Niedrig – wir setzen auf andere Differenzierung', key: 'ratings_low', benchmark: 'Eigene Differenzierung kann tragen – Kombi mit externem Proof erleichtert dennoch interne Freigaben.' }
-        ]
-      },
-      {
-        id: 'q4_growth',
-        text: '> Welches wird Ihr größter Hebel sein, um Ihre Marktposition bis 2026 auszubauen?',
-        options: [
-          { label: 'Markenbekanntheit steigern', key: 'growth_brand', benchmark: 'Brand-Invest stärkt Recall & Pull – im Vergleich steigt die Meeting-Quote bei klarer Positionierung.' },
-          { label: 'Wettbewerbsposition schärfen', key: 'growth_competition', benchmark: 'Transparente Wettbewerbsvergleiche verkürzen Auswahlzyklen und unterstützen das Leadership-Narrativ.' },
-          { label: 'Differenzierung über Innovation', key: 'growth_innovation', benchmark: 'Innovationsgetriebene Anbieter gewinnen in neuen Kategorien schneller Sichtbarkeit & Mindshare.' },
-          { label: 'Sichtbarkeit durch Referenzen & Ratings', key: 'growth_ratings', benchmark: 'Die meisten Anbieter sehen sichtbare Differenzierung über Referenzen & Ratings als entscheidenden Growth-Faktor.' }
-        ]
-      }
-    ]
+    apiUrl: '/api/lead' // aktuell ungenutzt – Versand via Outlook (CSV)
   };
 
-  document.documentElement.setAttribute('data-theme', CONFIG.theme === 'orange' ? 'orange' : 'green');
-  document.getElementById('themeBadge').textContent = `theme: ${CONFIG.theme}`;
-
+  // --- Boot Lines (Variante 1)
   const bootLines = [
     '> Initializing MesseNet [it-sa2025]...',
     '> Loading security modules... [OK]',
@@ -149,13 +106,60 @@
     `> ${CONFIG.headline}`
   ];
 
+  // --- Quiz-Konfig (unverändert)
+  const QUIZ = [
+    {
+      id: 'q1_invest',
+      text: '> Wie wichtig werden Investitionen in Marktforschung & Wettbewerbsanalysen für Ihr Unternehmen bis 2026?',
+      options: [
+        { label: 'Sehr wichtig – wir bauen das aus', key: 'invest_high', benchmark: '62% der Anbieter investieren bis 2026 gezielt in Market Intelligence – die Orientierung wird entscheidend.' },
+        { label: 'Mittel – punktuell geplant', key: 'invest_mid', benchmark: 'Viele Unternehmen planen punktuelle Analysen: Fokus auf kritische Entscheidungen und Wettbewerbssituationen.' },
+        { label: 'Gering – bisher kein Fokus', key: 'invest_low', benchmark: 'Ein geringer Fokus birgt Risiko: fehlende Markttransparenz verlängert Zyklen und erschwert Priorisierung.' }
+      ]
+    },
+    {
+      id: 'q2_gtm',
+      text: '> Wo erwarten Sie die größten Veränderungen in Ihrem Go-to-Market bis 2026?',
+      options: [
+        { label: 'Neue Zielmärkte / Branchen', key: 'gtm_newmarkets', benchmark: 'Viele Anbieter nutzen neue Verticals, um Wachstum zu beschleunigen – vorausgesetzt, Messaging & Use-Cases passen.' },
+        { label: 'Vertriebsmodell neu ausrichten', key: 'gtm_salesmodel', benchmark: 'Die Neuausrichtung des Vertriebs (Direkt/Partner) wirkt stark – klare ICP-Definitionen sind der Hebel.' },
+        { label: 'Marketing & Kommunikation verstärken', key: 'gtm_marketing', benchmark: '43% der Anbieter priorisieren bis 2026 eine Schärfung ihrer Marketing- & Kommunikationsstrategie.' },
+        { label: 'Customer Experience ausbauen', key: 'gtm_cx', benchmark: 'Investitionen in CX wirken doppelt: Höhere Bindung und bessere Weiterempfehlungen entlang der Journey.' }
+      ]
+    },
+    {
+      id: 'q3_ratings',
+      text: '> Welche Rolle spielen unabhängige User Ratings & Analysten-Benchmarks (PUR) für Sie bis 2026?',
+      options: [
+        { label: 'Sehr relevant – beeinflusst Marktauftritt', key: 'ratings_high', benchmark: 'Fast zwei Drittel der Anbieter setzen bis 2026 auf unabhängige Ratings, um Vertrauen am Markt aufzubauen.' },
+        { label: 'Mittel – nice to have, ergänzend', key: 'ratings_mid', benchmark: 'Ergänzend eingesetzt, bieten Ratings schnelle Orientierung und stärken den Beleg im Mid-Funnel.' },
+        { label: 'Niedrig – wir setzen auf andere Differenzierung', key: 'ratings_low', benchmark: 'Eigene Differenzierung kann tragen – Kombi mit externem Proof erleichtert dennoch interne Freigaben.' }
+      ]
+    },
+    {
+      id: 'q4_growth',
+      text: '> Welches wird Ihr größter Hebel sein, um Ihre Marktposition bis 2026 auszubauen?',
+      options: [
+        { label: 'Markenbekanntheit steigern', key: 'growth_brand', benchmark: 'Brand-Invest stärkt Recall & Pull – im Vergleich steigt die Meeting-Quote bei klarer Positionierung.' },
+        { label: 'Wettbewerbsposition schärfen', key: 'growth_competition', benchmark: 'Transparente Wettbewerbsvergleiche verkürzen Auswahlzyklen und unterstützen das Leadership-Narrativ.' },
+        { label: 'Differenzierung über Innovation', key: 'growth_innovation', benchmark: 'Innovationsgetriebene Anbieter gewinnen in neuen Kategorien schneller Sichtbarkeit & Mindshare.' },
+        { label: 'Sichtbarkeit durch Referenzen & Ratings', key: 'growth_ratings', benchmark: 'Die meisten Anbieter sehen sichtbare Differenzierung über Referenzen & Ratings als entscheidenden Growth-Faktor.' }
+      ]
+    }
+  ];
+
+  // --- DOM Refs
+  document.documentElement.setAttribute('data-theme', CONFIG.theme === 'orange' ? 'orange' : 'green');
+  const themeBadge = document.getElementById('themeBadge'); if(themeBadge) themeBadge.textContent = `theme: ${CONFIG.theme}`;
   const typeArea = document.getElementById('typeArea');
   const introArea = document.getElementById('introArea');
   const resultArea = document.getElementById('resultArea');
 
+  // --- State
   let runId = 0;
   const answers = {};
 
+  // --- Helpers
   function scrollToBottom(){ window.scrollTo({ top: document.body.scrollHeight, behavior:'smooth' }); }
   function typeLineInto(container, text, speed=16, myRun=runId){
     return new Promise(resolve=>{
@@ -176,7 +180,9 @@
   }
   function insertAfter(parent,newNode,refNode){ parent.insertBefore(newNode, refNode? refNode.nextSibling : null); }
 
+  // --- Quiz Rendering
   async function showQuestion(idx, container, afterEl=null){
+    const q = QUIZ[idx];
     const qWrap=document.createElement('div');
     const block=document.createElement('div'); block.className='block';
     const title=document.createElement('div'); title.className='block-title'; block.appendChild(title);
@@ -184,8 +190,8 @@
     qWrap.appendChild(block); qWrap.appendChild(btnRow);
     if(afterEl && afterEl.parentNode===container) insertAfter(container,qWrap,afterEl); else container.appendChild(qWrap);
     container.classList.remove('hidden');
-    const myRun=++runId; await typeLineInto(title, CONFIG.quiz[idx].text, 14, myRun); if(myRun!==runId) return;
-    CONFIG.quiz[idx].options.forEach(opt=>{
+    const myRun=++runId; await typeLineInto(title, q.text, 14, myRun); if(myRun!==runId) return;
+    q.options.forEach(opt=>{
       const b=document.createElement('button'); b.className='btn'; b.textContent=opt.label;
       b.addEventListener('click', ()=>handleAnswer(idx,opt,qWrap)); btnRow.appendChild(b);
     });
@@ -193,7 +199,7 @@
   }
 
   async function handleAnswer(idx,opt,qWrap){
-    const myRun=++runId; const q=CONFIG.quiz[idx]; answers[q.id]=opt.label;
+    const myRun=++runId; const q=QUIZ[idx]; answers[q.id]=opt.label;
 
     const sysBlock=document.createElement('div'); sysBlock.className='block'; insertAfter(resultArea,sysBlock,qWrap);
     await typeLineInto(sysBlock, `> Auswahl bestätigt: [${opt.label.toUpperCase()}]`, 14, myRun); if(myRun!==runId) return;
@@ -206,7 +212,7 @@
     setTimeout(()=>{ sysBlock.classList.add('dim'); }, 200);
     await new Promise(r=>setTimeout(r,600)); if(myRun!==runId) return;
 
-    const nextIndex=idx+1; const isLast=nextIndex>=CONFIG.quiz.length;
+    const nextIndex=idx+1; const isLast=nextIndex>=QUIZ.length;
     if(isLast){ await analyseAndMission(myRun); }
     else { showQuestion(nextIndex, resultArea, benchBlock); }
   }
@@ -243,26 +249,82 @@
     await missionSequence(myRun, true, profile);
   }
 
+  // === NEU: Mission/CTA im Console-Stil + CSV nach Outlook
   async function missionSequence(myRun, focusCalendar=true, profile=''){
     const block2=document.createElement('div'); block2.className='block';
     const title2=document.createElement('div'); title2.className='block-title'; title2.textContent='> Mission Update:';
     const missionP=document.createElement('div'); missionP.className='text';
     block2.appendChild(title2); block2.appendChild(missionP); resultArea.appendChild(block2); scrollToBottom();
-    const r2=await typeLineInto(missionP,'Sie haben die Schnell-Analyse freigeschaltet. Holen Sie sich den vollständigen Branchenreport + exklusive Insights.',14,myRun);
+
+    const r2=await typeLineInto(
+      missionP,
+      'Ihre Analyse ist abgeschlossen. Um den vollständigen Security-Report (PUR-Security) für Ihr Unternehmen zu erhalten, vereinbaren Sie einen Termin oder fordern Sie den individuellen Report an.',
+      14,
+      myRun
+    );
     if(r2==='aborted'||myRun!==runId) return;
 
     const btnRow=document.createElement('div'); btnRow.className='btn-row';
-    const a1=document.createElement('a'); a1.className='btn sweep'; a1.id='ctaCalendar'; a1.href=CONFIG.calendarUrl; a1.target='_blank'; a1.rel='noopener noreferrer'; a1.textContent='Termin vereinbaren';
-    const b2=document.createElement('button'); b2.className='btn'; b2.type='button'; b2.textContent='Individuellen Report anfragen'; b2.addEventListener('click', ()=>openReportForm());
-    btnRow.appendChild(a1); btnRow.appendChild(b2); block2.appendChild(btnRow); scrollToBottom();
+    const a1=document.createElement('a'); 
+    a1.className='btn sweep'; 
+    a1.id='ctaCalendar'; 
+    a1.href=CONFIG.calendarUrl; 
+    a1.target='_blank'; 
+    a1.rel='noopener noreferrer'; 
+    a1.textContent='Termin vereinbaren';
 
-    if(focusCalendar){ const el=document.getElementById('ctaCalendar'); if(el){ el.scrollIntoView({behavior:'smooth',block:'center'}); el.classList.remove('animate'); void el.offsetWidth; el.classList.add('animate'); setTimeout(()=>el.classList.remove('animate'),1300); } }
+    const b2=document.createElement('button'); 
+    b2.className='btn'; 
+    b2.type='button'; 
+    b2.textContent='Report im PUR-Security anfordern'; 
+    b2.addEventListener('click', ()=>openReportForm(profile));
+
+    btnRow.appendChild(a1); 
+    btnRow.appendChild(b2); 
+    block2.appendChild(btnRow); 
+    scrollToBottom();
+
+    if(focusCalendar){ 
+      const el=document.getElementById('ctaCalendar'); 
+      if(el){ 
+        el.scrollIntoView({behavior:'smooth',block:'center'}); 
+        el.classList.remove('animate'); 
+        void el.offsetWidth; 
+        el.classList.add('animate'); 
+        setTimeout(()=>el.classList.remove('animate'),1300); 
+      } 
+    }
   }
 
-  // === Backend-Submit (echtes API) ===
-  function openReportForm(){
+  // CSV-Builder: erzeugt Header + Datenzeile
+  function toCsvLine(values){
+    // CSV-Safe: Quotes doppeln, Werte in Quotes, Komma als Separator
+    return values.map(v=>{
+      const s = (v==null ? '' : String(v));
+      return `"${s.replace(/"/g,'""')}"`;
+    }).join(',');
+  }
+  function buildCsv(profile, formData){
+    const header = ['timestamp','name','company','email','profile','q1','q2','q3','q4'];
+    const ts = new Date().toISOString();
+    const row = [
+      ts,
+      formData.name,
+      formData.company,
+      formData.email,
+      profile || '',
+      answers['q1_invest'] || '',
+      answers['q2_gtm'] || '',
+      answers['q3_ratings'] || '',
+      answers['q4_growth'] || ''
+    ];
+    return `${header.join(',')}\n${toCsvLine(row)}`;
+  }
+
+  // === Outlook/CSV Formular
+  function openReportForm(profile=''){
     const formBlock=document.createElement('div'); formBlock.className='block';
-    const title=document.createElement('div'); title.className='block-title'; title.textContent='> Kontaktformular (Individueller Report)'; formBlock.appendChild(title);
+    const title=document.createElement('div'); title.className='block-title'; title.textContent='> Kontaktformular (Individueller Report – PUR)'; formBlock.appendChild(title);
     const form=document.createElement('form'); form.setAttribute('novalidate','novalidate');
     form.innerHTML = `
       <div class="form-grid">
@@ -270,14 +332,14 @@
         <div><label for="company">Unternehmen</label><input id="company" name="company" placeholder="Firmenname" required /></div>
         <div><label for="email">Geschäftliche E-Mail</label><input id="email" name="email" placeholder="name@unternehmen.de" required /></div>
       </div>
-      <div class="hint">Wir nutzen Ihre Angaben ausschließlich zur Kontaktaufnahme für den individuellen Report.</div>
+      <div class="hint">Beim Senden wird eine E-Mail an ${CONFIG.reportEmail} mit <strong>CSV-Inhalt</strong> geöffnet – ideal für Zapier-Mapping in Outlook.</div>
       <div class="btn-row" style="margin-top:12px;">
-        <button type="submit" class="btn">Anfrage senden</button>
+        <button type="submit" class="btn">Per Outlook senden (CSV)</button>
         <button type="button" class="btn" id="closeForm">Abbrechen</button>
       </div>
       <div id="formMsg" class="hint"></div>
     `;
-    form.addEventListener('submit', async (e)=>{
+    form.addEventListener('submit', (e)=>{
       e.preventDefault();
       const name=form.querySelector('#name').value.trim();
       const company=form.querySelector('#company').value.trim();
@@ -286,22 +348,36 @@
       if(!name||!company||!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
         msg.textContent='Bitte alle Felder korrekt ausfüllen (gültige geschäftliche E-Mail).'; msg.className='hint err'; return;
       }
-      msg.textContent='Wird gesendet…'; msg.className='hint';
-      try{
-        const payload={ name, company, email, answers: (typeof answers==='object'? answers : {}) };
-        const res=await fetch(CONFIG.apiUrl,{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
-        if(!res.ok) throw new Error(await res.text());
-        msg.textContent='Danke! Wir melden uns mit Ihrem individuellen Report.'; msg.className='hint ok';
-        form.querySelectorAll('input,button[type="submit"]').forEach(i=>i.disabled=true);
-      }catch(err){
-        console.error(err);
-        msg.textContent='Senden fehlgeschlagen. Bitte später erneut versuchen oder am Stand ansprechen.'; msg.className='hint err';
-      }
+      msg.textContent='CSV wird vorbereitet…'; msg.className='hint';
+
+      const csv = buildCsv(profile, {name, company, email});
+
+      // Mail an Outlook vorbereiten – CSV im Body (2 Zeilen: Header + Daten)
+      const subject = 'PUR – Report-Anfrage (CSV)';
+      const body = csv;
+
+      // Hinweis: mailto unterstützt keine Dateianhänge. Für Zapier reicht CSV im Body.
+      const mailto = `mailto:${encodeURIComponent(CONFIG.reportEmail)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      window.location.href = mailto;
+
+      msg.textContent='Outlook wurde geöffnet. Bitte E-Mail senden.'; 
+      msg.className='hint ok';
+      form.querySelectorAll('input,button[type="submit"]').forEach(i=>i.disabled=true);
     });
-    const closeBtn=document.createElement('button'); closeBtn.type='button'; closeBtn.textContent='Formular schließen'; closeBtn.className='btn'; closeBtn.addEventListener('click',()=>{ formBlock.remove(); });
-    formBlock.appendChild(form); formBlock.appendChild(closeBtn); resultArea.appendChild(formBlock); formBlock.scrollIntoView({behavior:'smooth',block:'start'});
+
+    const closeBtn=document.createElement('button'); 
+    closeBtn.type='button'; 
+    closeBtn.textContent='Formular schließen'; 
+    closeBtn.className='btn'; 
+    closeBtn.addEventListener('click',()=>{ formBlock.remove(); });
+
+    formBlock.appendChild(form); 
+    formBlock.appendChild(closeBtn); 
+    resultArea.appendChild(formBlock); 
+    formBlock.scrollIntoView({behavior:'smooth',block:'start'});
   }
 
+  // --- Boot
   (function boot(){
     const myRun=++runId;
     typeSequence(typeArea, bootLines, 14, 220, myRun).then(()=>{

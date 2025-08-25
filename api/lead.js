@@ -56,25 +56,14 @@ async function sendMailCSV(csv) {
 async function sendToNotion(payload) {
   const NOTION_SECRET = process.env.NOTION_SECRET;
   const NOTION_DB_ID  = process.env.NOTION_DB_ID;
+  if (!NOTION_SECRET || !NOTION_DB_ID) throw new Error('Notion env vars missing');
 
-  if (!NOTION_SECRET || !NOTION_DB_ID) {
-    throw new Error('Notion env vars missing');
-  }
-
-  const { name, company, email, profile, answers = {} } = payload || {};
+  const { name } = payload || {};
   const body = {
     parent: { database_id: NOTION_DB_ID },
     properties: {
-      // Name = Title-Property der Datenbank (muss existieren)
+      // <- PASSE "Name" GENAU an die Titel-Spalte deiner DB an
       Name: { title: [{ text: { content: String(name || '').trim() || 'Unbekannt' } }] },
-      // Rest als Rich Text / Email – passt auf die meisten Setups
-      Company: { rich_text: [{ text: { content: company || '' } }] },
-      Email:   { email: email || '' },
-      Profile: { rich_text: [{ text: { content: profile || '' } }] },
-      Q1:      { rich_text: [{ text: { content: answers['q1_invest']   || '' } }] },
-      Q2:      { rich_text: [{ text: { content: answers['q2_gtm']      || '' } }] },
-      Q3:      { rich_text: [{ text: { content: answers['q3_ratings']  || '' } }] },
-      Q4:      { rich_text: [{ text: { content: answers['q4_growth']   || '' } }] },
     },
   };
 
@@ -88,11 +77,8 @@ async function sendToNotion(payload) {
     body: JSON.stringify(body),
   });
 
-  if (!res.ok) {
-    const errText = await res.text().catch(()=> '');
-    throw new Error(`Notion error: ${res.status} ${errText}`);
-  }
-
+  const txt = await res.text();
+  if (!res.ok) throw new Error(`Notion error: ${res.status} ${txt}`);
   return { ok: true };
 }
 

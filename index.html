@@ -89,7 +89,7 @@
     headline: 'Willkommen bei techconsult – Research & Insights for IT-Decision Makers.',
     calendarUrl: 'https://outlook.office.com/book/techconsultGmbHNilsHoltel@techconsult.de/',
     reportEmail: 'nils.holtel@techconsult.de',
-    apiUrl: '/api/lead' // aktuell ungenutzt – Versand via Outlook (CSV)
+    apiUrl: '/api/lead' // Vercel Serverless Endpoint
   };
 
   // --- Boot Lines (Variante 1)
@@ -106,7 +106,7 @@
     `> ${CONFIG.headline}`
   ];
 
-  // --- Quiz-Konfig (unverändert)
+  // --- Quiz-Konfig
   const QUIZ = [
     {
       id: 'q1_invest',
@@ -249,7 +249,7 @@
     await missionSequence(myRun, true, profile);
   }
 
-  // === NEU: Mission/CTA im Console-Stil + CSV nach Outlook
+  // === Mission/CTA im Console-Stil – Formular-Submit via Fetch (kein Outlook)
   async function missionSequence(myRun, focusCalendar=true, profile=''){
     const block2=document.createElement('div'); block2.className='block';
     const title2=document.createElement('div'); title2.className='block-title'; title2.textContent='> Mission Update:';
@@ -258,7 +258,7 @@
 
     const r2=await typeLineInto(
       missionP,
-      'Ihre Analyse ist abgeschlossen. Um den vollständigen Security-Report (PUR-Security) für Ihr Unternehmen zu erhalten, vereinbaren Sie einen Termin oder fordern Sie den individuellen Report an.',
+      'Ihre Analyse ist abgeschlossen. Um den vollständigen PUR-Report für Ihr Unternehmen zu erhalten, vereinbaren Sie einen Termin oder fordern Sie den individuellen Report an.',
       14,
       myRun
     );
@@ -276,7 +276,7 @@
     const b2=document.createElement('button'); 
     b2.className='btn'; 
     b2.type='button'; 
-    b2.textContent='Report im PUR-Security anfordern'; 
+    b2.textContent='Individuellen Report anfragen'; 
     b2.addEventListener('click', ()=>openReportForm(profile));
 
     btnRow.appendChild(a1); 
@@ -296,32 +296,7 @@
     }
   }
 
-  // CSV-Builder: erzeugt Header + Datenzeile
-  function toCsvLine(values){
-    // CSV-Safe: Quotes doppeln, Werte in Quotes, Komma als Separator
-    return values.map(v=>{
-      const s = (v==null ? '' : String(v));
-      return `"${s.replace(/"/g,'""')}"`;
-    }).join(',');
-  }
-  function buildCsv(profile, formData){
-    const header = ['timestamp','name','company','email','profile','q1','q2','q3','q4'];
-    const ts = new Date().toISOString();
-    const row = [
-      ts,
-      formData.name,
-      formData.company,
-      formData.email,
-      profile || '',
-      answers['q1_invest'] || '',
-      answers['q2_gtm'] || '',
-      answers['q3_ratings'] || '',
-      answers['q4_growth'] || ''
-    ];
-    return `${header.join(',')}\n${toCsvLine(row)}`;
-  }
-
-  // === Outlook/CSV Formular
+  // === Formular (Submit an /api/lead via fetch)
   function openReportForm(profile=''){
     const formBlock=document.createElement('div'); formBlock.className='block';
     const title=document.createElement('div'); title.className='block-title'; title.textContent='> Kontaktformular (Individueller Report – PUR)'; formBlock.appendChild(title);
@@ -332,14 +307,14 @@
         <div><label for="company">Unternehmen</label><input id="company" name="company" placeholder="Firmenname" required /></div>
         <div><label for="email">Geschäftliche E-Mail</label><input id="email" name="email" placeholder="name@unternehmen.de" required /></div>
       </div>
-      <div class="hint">Beim Senden wird eine E-Mail an ${CONFIG.reportEmail} mit <strong>CSV-Inhalt</strong> geöffnet – ideal für Zapier-Mapping in Outlook.</div>
+      <div class="hint">Wir nutzen Ihre Angaben ausschließlich zur Kontaktaufnahme für den individuellen Report.</div>
       <div class="btn-row" style="margin-top:12px;">
-        <button type="submit" class="btn">Per Outlook senden (CSV)</button>
+        <button type="submit" class="btn">Anfrage senden</button>
         <button type="button" class="btn" id="closeForm">Abbrechen</button>
       </div>
       <div id="formMsg" class="hint"></div>
     `;
-    form.addEventListener('submit', (e)=>{
+    form.addEventListener('submit', async (e)=>{
       e.preventDefault();
       const name=form.querySelector('#name').value.trim();
       const company=form.querySelector('#company').value.trim();
@@ -348,33 +323,20 @@
       if(!name||!company||!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
         msg.textContent='Bitte alle Felder korrekt ausfüllen (gültige geschäftliche E-Mail).'; msg.className='hint err'; return;
       }
-      msg.textContent='CSV wird vorbereitet…'; msg.className='hint';
-
-      const csv = buildCsv(profile, {name, company, email});
-
-      // Mail an Outlook vorbereiten – CSV im Body (2 Zeilen: Header + Daten)
-      const subject = 'PUR – Report-Anfrage (CSV)';
-      const body = csv;
-
-      // Hinweis: mailto unterstützt keine Dateianhänge. Für Zapier reicht CSV im Body.
-      const mailto = `mailto:${encodeURIComponent(CONFIG.reportEmail)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-      window.location.href = mailto;
-
-      msg.textContent='Outlook wurde geöffnet. Bitte E-Mail senden.'; 
-      msg.className='hint ok';
-      form.querySelectorAll('input,button[type="submit"]').forEach(i=>i.disabled=true);
+      msg.textContent='Wird gesendet…'; msg.className='hint';
+      try{
+        const payload={ name, company, email, profile, answers: (typeof answers==='object'? answers : {}) };
+        const res=await fetch(CONFIG.apiUrl,{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+        if(!res.ok) throw new Error(await res.text());
+        msg.textContent='Danke! Wir melden uns mit Ihrem individuellen Report.'; msg.className='hint ok';
+        form.querySelectorAll('input,button[type="submit"]').forEach(i=>i.disabled=true);
+      }catch(err){
+        console.error(err);
+        msg.textContent='Senden fehlgeschlagen. Bitte später erneut versuchen oder am Stand ansprechen.'; msg.className='hint err';
+      }
     });
-
-    const closeBtn=document.createElement('button'); 
-    closeBtn.type='button'; 
-    closeBtn.textContent='Formular schließen'; 
-    closeBtn.className='btn'; 
-    closeBtn.addEventListener('click',()=>{ formBlock.remove(); });
-
-    formBlock.appendChild(form); 
-    formBlock.appendChild(closeBtn); 
-    resultArea.appendChild(formBlock); 
-    formBlock.scrollIntoView({behavior:'smooth',block:'start'});
+    const closeBtn=document.createElement('button'); closeBtn.type='button'; closeBtn.textContent='Formular schließen'; closeBtn.className='btn'; closeBtn.addEventListener('click',()=>{ formBlock.remove(); });
+    formBlock.appendChild(form); formBlock.appendChild(closeBtn); resultArea.appendChild(formBlock); formBlock.scrollIntoView({behavior:'smooth',block:'start'});
   }
 
   // --- Boot

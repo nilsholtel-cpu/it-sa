@@ -2,7 +2,5 @@
   "name": "techconsult-console",
   "version": "1.0.0",
   "private": true,
-  "dependencies": {
-    "nodemailer": "^6.9.0"
-  }
+  "dependencies": { "nodemailer": "^6.9.0" }
 }

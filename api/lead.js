@@ -1,60 +1,58 @@
 // Vercel Serverless Function: /api/lead
 const nodemailer = require('nodemailer');
 
-function allowCors(res, origin = '*') {
-  res.setHeader('Access-Control-Allow-Origin', origin);
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+function toCsvLine(values) {
+  return values.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',');
+}
+function buildCsv(payload) {
+  const { name, company, email, profile, answers = {} } = payload || {};
+  const headers = ['timestamp','name','company','email','profile','q1','q2','q3','q4'];
+  const row = [
+    new Date().toISOString(),
+    name ?? '', company ?? '', email ?? '', profile ?? '',
+    answers['q1_invest'] ?? '', answers['q2_gtm'] ?? '',
+    answers['q3_ratings'] ?? '', answers['q4_growth'] ?? '',
+  ];
+  return `${headers.join(',')}\n${toCsvLine(row)}`;
 }
 
 module.exports = async (req, res) => {
-  allowCors(res, process.env.CORS_ORIGIN || '*');
+  if (req.method !== 'POST') { res.status(405).send('Method Not Allowed'); return; }
 
-  if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  const { name, company, email, profile, answers } = req.body || {};
+  if (!name || !company || !email) {
+    res.status(400).json({ ok:false, error:'Missing required fields' }); return;
+  }
+
+  const csv = buildCsv({ name, company, email, profile, answers });
+  const subject = 'PUR-Report Anfrage (CSV)';
+  const bodyText =
+`Untenstehend die CSV-Daten (Header + Zeile) für Zapier-Parsing:
+
+${csv}
+
+-- Ende CSV --
+`;
 
   try {
-    const { name, company, email, answers } = req.body || {};
-    if (!name || !company || !email) return res.status(400).json({ error: 'Missing required fields' });
-    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    if (!emailOk) return res.status(400).json({ error: 'Invalid email' });
-
-    // SMTP Transport (z. B. Microsoft 365)
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST || 'smtp.office365.com',
       port: Number(process.env.SMTP_PORT || 587),
-      secure: false,
+      secure: Number(process.env.SMTP_PORT || 587) === 465,
       auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-      tls: { ciphers: 'TLSv1.2' }
     });
-
-    const TO = process.env.TO_EMAIL || 'nils.holtel@techconsult.de';
-    const FROM = process.env.FROM_EMAIL || process.env.SMTP_USER;
-    const BCC = process.env.CRM_BCC || ''; // optional CRM-BCC
-
-    const lines = [
-      'Neue Anfrage für individuellen Report:',
-      '',
-      `Name: ${name}`,
-      `Unternehmen: ${company}`,
-      `Geschäftliche E-Mail: ${email}`,
-      '',
-      '--- Antworten ---',
-      ...Object.entries(answers || {}).map(([k, v]) => `${k}: ${v}`)
-    ];
 
     await transporter.sendMail({
-      from: FROM,
-      to: TO,
-      bcc: BCC || undefined,
-      replyTo: email,
-      subject: 'Neue Report-Anfrage (Landingpage)',
-      text: lines.join('\n')
+      from: `"PUR Lead" <${process.env.SMTP_USER}>`,
+      to: process.env.MAIL_TO || process.env.SMTP_USER,
+      subject,
+      text: bodyText,                                      // CSV im Body (für Zapier-Formatter)
+      attachments: [{ filename: `pur_lead_${Date.now()}.csv`, content: csv }], // optional zusätzlich als Anhang
     });
 
-    return res.status(200).json({ ok: true });
+    res.status(200).json({ ok:true });
   } catch (err) {
-    console.error('[lead] error', err);
-    return res.status(500).json({ error: 'Server error' });
+    console.error('Mail send failed:', err?.message || err);
+    res.status(500).json({ ok:false, error:'Mail send failed' });
   }
 };

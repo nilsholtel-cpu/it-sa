@@ -137,10 +137,14 @@
   document.getElementById('themeBadge').textContent = `theme: ${CONFIG.theme}`;
 
   const bootLines = [
-    '> Accessing secure system...',
-    '> Authorization: Messe-Badge NFC',
-    '> Identity: Visitor detected',
-    '> Status: [CLEAR]',
+    '> Initializing MesseNet [it-sa2025]...',
+    '> Loading security modules... [OK]',
+    '> Scanning for NFC credentials...',
+    '> Authorization Token: Messe-Badge [VALID]',
+    '> Identity Match: VISITOR // NODE #A17',
+    '> Firewall Handshake... [PASSED]',
+    '> Threat Level Assessment... [CLEAR]',
+    '> Secure Access Granted – Welcome to the it-sa GRID_',
     '>',
     `> ${CONFIG.headline}`
   ];
